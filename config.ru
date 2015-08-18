@@ -11,13 +11,7 @@ class Application
       greeting = request.params["greeting"]
     end
 
-    content = content("start.html", name: name, greeting: greeting)
-
-    status_code = 200
-    headers = {}
-    response = [content]
-
-    [status_code, headers, response]
+    render :start, name: name, greeting: greeting
   end
 
   def content(file, locals)
@@ -28,6 +22,16 @@ class Application
 
     template = File.read(file)
     ERB.new(template).result(context)
+  end
+
+  def render(name, locals)
+    content = content("#{name}.html", locals)
+
+    status_code = 200
+    headers = {}
+    response = [content]
+
+    [status_code, headers, response]
   end
 end
 
