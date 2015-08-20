@@ -3,21 +3,26 @@ require 'erb'
 class Application
   def call(env)
     request = Rack::Request.new(env)
-    name = request.params["name"] || "World"
 
     if request.get?
       if request.path == "/farewell"
-        greeting = "Goodbye"
+        return render :start, name: name(request), greeting: "Goodbye"
       elsif request.path == "/"
-        greeting = "Hello"
-      else
-        return [404, {}, ["What's that? Don't know that address."]]
+        return render :start, name: name(request), greeting: "Hello"
       end
     elsif request.post?
-      greeting = request.params["greeting"]
+      return render :start, name: name(request), greeting: user_greeting(request)
     end
 
-    render :start, name: name, greeting: greeting
+    return [404, {}, ["What's that? Don't know that address."]]
+  end
+
+  def name(request)
+    request.params["name"] || "World"
+  end
+
+  def user_greeting(request)
+    request.params["greeting"]
   end
 
   def content(file, locals)
