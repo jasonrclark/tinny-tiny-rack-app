@@ -1,24 +1,22 @@
 require 'erb'
 
 class Application
+  ROUTES = {
+    ["GET", "/farewell"]  => Proc.new { |app, request| app.render :start, name: app.name(request), greeting: "Goodbye" },
+    ["GET", "/"]          => Proc.new { |app, request| app.render :start, name: app.name(request), greeting: "Hello" },
+    ["POST", "/"]         => Proc.new { |app, request| app.render :start, name: app.name(request), greeting: app.user_greeting(request) },
+    ["POST", "/farewell"] => Proc.new { |app, request| app.render :start, name: app.name(request), greeting: app.user_greeting(request) },
+    :missing              => Proc.new { |app, request| [404, {}, ["What's that? Don't know that address."]] }
+  }
+
   def call(env)
     request = Rack::Request.new(env)
-    goodbye = Proc.new { |request| render :start, name: name(request), greeting: "Goodbye" }
-    hello   = Proc.new { |request| render :start, name: name(request), greeting: "Hello" }
-    greet   = Proc.new { |request| render :start, name: name(request), greeting: user_greeting(request) }
-    missing = Proc.new { |request| [404, {}, ["What's that? Don't know that address."]] }
 
-    if request.get?
-      if request.path == "/farewell"
-        return goodbye.call(request)
-      elsif request.path == "/"
-        return hello.call(request)
-      end
-    elsif request.post?
-      return greet.call(request)
-    end
+    route_lookup = [request.request_method, request.path]
+    route = ROUTES[route_lookup]
+    route ||= ROUTES[:missing]
 
-    return missing.call(request)
+    route.call(self, request)
   end
 
   def name(request)
