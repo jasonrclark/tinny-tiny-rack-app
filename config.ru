@@ -6,7 +6,11 @@ class Application
     name = request.params["name"] || "World"
 
     if request.get?
-      greeting = "Hello"
+      if request.path == "/farewell"
+        greeting = "Goodbye"
+      else
+        greeting = "Hello"
+      end
     elsif request.post?
       greeting = request.params["greeting"]
     end
