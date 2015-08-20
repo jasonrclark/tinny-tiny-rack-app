@@ -13,20 +13,20 @@ class Application
     ROUTES[["POST", path]] = block
   end
 
-  get "/" do |app, request|
-    app.render :start, name: app.name(request), greeting: "Hello"
+  get "/" do |request|
+    render :start, name: name(request), greeting: "Hello"
   end
 
-  get "/farewell" do |app, request|
-    app.render :start, name: app.name(request), greeting: "Goodbye"
+  get "/farewell" do |request|
+    render :start, name: name(request), greeting: "Goodbye"
   end
 
-  post "/" do |app, request|
-    app.render :start, name: app.name(request), greeting: app.user_greeting(request)
+  post "/" do |request|
+    render :start, name: name(request), greeting: user_greeting(request)
   end
 
-  post "/farewell" do |app, request|
-    app.render :start, name: app.name(request), greeting: app.user_greeting(request)
+  post "/farewell" do |request|
+    render :start, name: name(request), greeting: user_greeting(request)
   end
 
   def call(env)
@@ -36,7 +36,7 @@ class Application
     route = ROUTES[route_lookup]
     route ||= ROUTES[:missing]
 
-    route.call(self, request)
+    self.instance_exec(request, &route)
   end
 
   def name(request)
