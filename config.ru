@@ -35,4 +35,17 @@ class Application
   end
 end
 
+class SimpleMiddleware
+  def initialize(app, *_)
+    @app = app
+  end
+
+  def call(env)
+    puts "Hi there!"
+    @app.call(env)
+  end
+end
+
+use SimpleMiddleware
+
 run Application.new
