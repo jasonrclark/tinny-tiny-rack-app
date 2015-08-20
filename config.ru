@@ -3,18 +3,22 @@ require 'erb'
 class Application
   def call(env)
     request = Rack::Request.new(env)
+    goodbye = Proc.new { |request| render :start, name: name(request), greeting: "Goodbye" }
+    hello   = Proc.new { |request| render :start, name: name(request), greeting: "Hello" }
+    greet   = Proc.new { |request| render :start, name: name(request), greeting: user_greeting(request) }
+    missing = Proc.new { |request| [404, {}, ["What's that? Don't know that address."]] }
 
     if request.get?
       if request.path == "/farewell"
-        return render :start, name: name(request), greeting: "Goodbye"
+        return goodbye.call(request)
       elsif request.path == "/"
-        return render :start, name: name(request), greeting: "Hello"
+        return hello.call(request)
       end
     elsif request.post?
-      return render :start, name: name(request), greeting: user_greeting(request)
+      return greet.call(request)
     end
 
-    return [404, {}, ["What's that? Don't know that address."]]
+    return missing.call(request)
   end
 
   def name(request)
