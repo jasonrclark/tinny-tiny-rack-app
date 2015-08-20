@@ -8,8 +8,10 @@ class Application
     if request.get?
       if request.path == "/farewell"
         greeting = "Goodbye"
-      else
+      elsif request.path == "/"
         greeting = "Hello"
+      else
+        return [404, {}, ["What's that? Don't know that address."]]
       end
     elsif request.post?
       greeting = request.params["greeting"]
