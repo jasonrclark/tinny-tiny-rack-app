@@ -2,12 +2,32 @@ require 'erb'
 
 class Application
   ROUTES = {
-    ["GET", "/farewell"]  => Proc.new { |app, request| app.render :start, name: app.name(request), greeting: "Goodbye" },
-    ["GET", "/"]          => Proc.new { |app, request| app.render :start, name: app.name(request), greeting: "Hello" },
-    ["POST", "/"]         => Proc.new { |app, request| app.render :start, name: app.name(request), greeting: app.user_greeting(request) },
-    ["POST", "/farewell"] => Proc.new { |app, request| app.render :start, name: app.name(request), greeting: app.user_greeting(request) },
-    :missing              => Proc.new { |app, request| [404, {}, ["What's that? Don't know that address."]] }
+    :missing => Proc.new { |*_| [404, {}, ["What's that? Don't know that address."]] }
   }
+
+  def self.get(path, &block)
+    ROUTES[["GET", path]] = block
+  end
+
+  def self.post(path, &block)
+    ROUTES[["POST", path]] = block
+  end
+
+  get "/" do |app, request|
+    app.render :start, name: app.name(request), greeting: "Hello"
+  end
+
+  get "/farewell" do |app, request|
+    app.render :start, name: app.name(request), greeting: "Goodbye"
+  end
+
+  post "/" do |app, request|
+    app.render :start, name: app.name(request), greeting: app.user_greeting(request)
+  end
+
+  post "/farewell" do |app, request|
+    app.render :start, name: app.name(request), greeting: app.user_greeting(request)
+  end
 
   def call(env)
     request = Rack::Request.new(env)
